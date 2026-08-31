@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://peptidalab-romania-staging.netlify.app/sitemap.xml
