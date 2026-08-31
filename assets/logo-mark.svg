@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64mm" height="64mm" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">PeptidaLab EU — simbol de marcă</title>
+  <desc id="desc">Monogramă moleculară premium în indigo, violet și albastru glaciar.</desc>
+  <defs><linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7564E8"/><stop offset="1" stop-color="#73D7F7"/></linearGradient></defs>
+  <rect width="240" height="240" rx="34" fill="#EFF4FF"/>
+  <g transform="translate(45,35)" fill="none" stroke="#152A63" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M18 155 L18 38 L77 10 L132 42 L132 96 L77 128 L18 96 M77 128 L132 159"/></g>
+  <g transform="translate(45,35)">
+    <circle fill="#152A63" cx="18" cy="38" r="14"/><circle fill="#152A63" cx="77" cy="10" r="14"/><circle fill="#152A63" cx="132" cy="42" r="14"/><circle fill="#152A63" cx="132" cy="96" r="14"/><circle fill="#152A63" cx="77" cy="128" r="14"/><circle fill="url(#accent)" cx="18" cy="155" r="17"/><circle fill="#152A63" cx="132" cy="159" r="14"/>
+  </g>
+</svg>
