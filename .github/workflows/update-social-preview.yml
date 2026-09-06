@@ -1,0 +1,98 @@
+name: Update social preview with new vials
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Generate updated social preview
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw, ImageFilter
+
+          repo = Path.cwd()
+          output = repo / "assets" / "og-peptidalab.png"
+
+          def resized(path, target_height):
+              image = Image.open(path).convert("RGBA")
+              target_width = round(image.width * target_height / image.height)
+              return image.resize((target_width, target_height), Image.Resampling.LANCZOS)
+
+          base = Image.open(output).convert("RGBA")
+          panel_x0, panel_y0, panel_x1, panel_y1 = 925, 210, 1685, 720
+          panel = Image.new("RGBA", (panel_x1 - panel_x0, panel_y1 - panel_y0), (0, 0, 0, 0))
+          pixels = panel.load()
+          top = (251, 253, 255)
+          bottom = (233, 242, 255)
+          for y in range(panel.height):
+              t = y / max(1, panel.height - 1)
+              color = tuple(round(top[i] * (1 - t) + bottom[i] * t) for i in range(3)) + (255,)
+              for x in range(panel.width):
+                  pixels[x, y] = color
+
+          glow = Image.new("RGBA", panel.size, (0, 0, 0, 0))
+          draw = ImageDraw.Draw(glow)
+          for cx, cy, radius, alpha in [(55, 92, 30, 35), (680, 93, 30, 34), (730, 175, 24, 28)]:
+              draw.ellipse((cx-radius, cy-radius, cx+radius, cy+radius), fill=(111, 78, 224, alpha))
+          panel.alpha_composite(glow.filter(ImageFilter.GaussianBlur(18)))
+          base.alpha_composite(panel, (panel_x0, panel_y0))
+
+          product_dir = repo / "assets" / "products"
+          left = resized(product_dir / "bpc-157-10mg-vial-premium.png", 350)
+          center = resized(product_dir / "retatrutide-20mg-vial-premium.png", 430)
+          right = resized(product_dir / "mots-c-10mg-vial-premium.png", 350)
+
+          shadow = Image.new("RGBA", base.size, (0, 0, 0, 0))
+          shadow_draw = ImageDraw.Draw(shadow)
+          shadow_draw.ellipse((982, 640, 1142, 682), fill=(38, 73, 129, 48))
+          shadow_draw.ellipse((1198, 645, 1425, 700), fill=(38, 73, 129, 55))
+          shadow_draw.ellipse((1441, 640, 1601, 682), fill=(38, 73, 129, 48))
+          base.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(18)))
+
+          base.alpha_composite(left, (916, 310))
+          base.alpha_composite(center, (1137, 244))
+          base.alpha_composite(right, (1389, 310))
+          base.save(output, optimize=True)
+          PY
+
+          python - <<'PY'
+          from pathlib import Path
+          old = "assets/og-peptidalab.png?v=20260827-3"
+          new = "assets/og-peptidalab.png?v=20260906-1"
+          changed = 0
+          for path in Path(".").rglob("*.html"):
+              text = path.read_text(encoding="utf-8")
+              updated = text.replace(old, new)
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
+                  changed += 1
+          print(f"Updated {changed} HTML files")
+          PY
+
+      - name: Commit generated preview
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git rm .github/workflows/update-social-preview.yml
+          git commit -m "Update social preview with new product vials"
+          git push
