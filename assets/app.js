@@ -30,7 +30,7 @@ const discount=$('#discount-modal');
 $('.modal-close',discount)?.addEventListener('click',()=>hide(discount));
 
 const cookie=$('.cookie-banner');
-// Load tracking only after consent to the notice naming both providers.
+// Meta requires consent; Clarity uses limited cookieless mode until consent.
 const metaPixelId='2193519268213734',metaConsentVersion='meta-clarity-v2';
 const cookieNotice={
 ro:'Folosim stocare necesară pentru funcționarea site-ului. Cu acordul tău, Meta Pixel trimite către Meta informații despre vizitele pe pagini pentru măsurarea publicității. Poți refuza sau retrage acordul din preferințele cookie.',
@@ -41,12 +41,12 @@ bg:'Използваме необходимо съхранение за рабо
 nl:'We gebruiken noodzakelijke opslag voor de werking van de website. Met uw toestemming stuurt Meta Pixel informatie over paginabezoeken naar Meta om advertenties te meten. U kunt toestemming weigeren of intrekken via de cookievoorkeuren.'
 };
 const clarityNotice={
-ro:'Microsoft Clarity înregistrează interacțiunile cu site-ul pentru hărți de clicuri și înregistrări ale sesiunilor, cu conținutul formularelor mascat.',
-en:'Microsoft Clarity records website interactions for heatmaps and session recordings, with form content masked.',
-pl:'Microsoft Clarity rejestruje interakcje ze stroną na potrzeby map cieplnych i nagrań sesji, z zamaskowaną treścią formularzy.',
-hu:'A Microsoft Clarity hőtérképekhez és munkamenet-felvételekhez rögzíti a weboldalon végzett interakciókat, az űrlapok tartalmát maszkolva.',
-bg:'Microsoft Clarity записва взаимодействията със сайта за топлинни карти и записи на сесии, като съдържанието на формулярите е маскирано.',
-nl:'Microsoft Clarity registreert website-interacties voor heatmaps en sessieopnamen, waarbij formulierinhoud wordt gemaskeerd.'
+ro:'Microsoft Clarity măsoară vizitele și interacțiunile de bază fără cookie-uri. Doar cu acordul tău activează funcțiile complete, inclusiv înregistrările sesiunilor. Conținutul formularelor este mascat.',
+en:'Microsoft Clarity measures page visits and basic interactions without cookies. Only with your consent does it enable full features, including session recordings. Form content is masked.',
+pl:'Microsoft Clarity mierzy wizyty i podstawowe interakcje bez plików cookie. Pełne funkcje, w tym nagrania sesji, włącza tylko za Twoją zgodą. Treść formularzy jest maskowana.',
+hu:'A Microsoft Clarity cookie-k nélkül méri az oldallátogatásokat és az alapvető interakciókat. A teljes funkciók, köztük a munkamenet-felvételek, csak hozzájárulással működnek. Az űrlapok tartalma maszkolva van.',
+bg:'Microsoft Clarity измерва посещенията и основните взаимодействия без бисквитки. Пълните функции, включително записите на сесии, се активират само с ваше съгласие. Съдържанието на формулярите е маскирано.',
+nl:'Microsoft Clarity meet paginabezoeken en basisinteracties zonder cookies. Volledige functies, waaronder sessieopnamen, worden alleen met uw toestemming ingeschakeld. Formulierinhoud wordt gemaskeerd.'
 };
 if(cookie){const notice=$('p',cookie);if(notice)notice.textContent=cookieNotice[locale]+' '+clarityNotice[locale]}
 function hasMetaConsent(){return storage.get('pl_cookie',null)==='all'&&storage.get('pl_meta_consent_version',null)===metaConsentVersion}
@@ -60,18 +60,13 @@ function syncMetaPixel(allowed){
   if(!window.__plMetaPageViewSent){window.fbq('trackSingle',metaPixelId,'PageView');window.__plMetaPageViewSent=true}
 }
 function syncClarity(allowed){
-  if(!allowed){
-    if(window.__plClarityLoaded&&!window.__plClarityStopped){
-      window.clarity('consentv2',{ad_Storage:'denied',analytics_Storage:'denied'});
-      window.clarity('stop');window.__plClarityStopped=true;
-    }
-    return;
-  }
   // Mask forms before the asynchronous recorder can inspect the page.
   $$('form').forEach(form=>form.setAttribute('data-clarity-mask','true'));
   window.clarity=window.clarity||function(){(window.clarity.q=window.clarity.q||[]).push(arguments)};
-  window.clarity('consentv2',{ad_Storage:'granted',analytics_Storage:'granted'});
-  if(window.__plClarityStopped){window.clarity('start');window.__plClarityStopped=false}
+  // Queue the actual consent state before loading the Microsoft tag.
+  // Denial keeps measurement cookieless, including after consent withdrawal.
+  const consentState=allowed?'granted':'denied';
+  window.clarity('consentv2',{ad_Storage:consentState,analytics_Storage:consentState});
   if(!window.__plClarityLoaded){
     const script=document.createElement('script');script.type='text/javascript';script.async=true;
     script.src='https://www.clarity.ms/tag/yit78sejrh';
