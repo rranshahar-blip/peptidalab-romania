@@ -30,8 +30,8 @@ const discount=$('#discount-modal');
 $('.modal-close',discount)?.addEventListener('click',()=>hide(discount));
 
 const cookie=$('.cookie-banner');
-// Meta Pixel is loaded only after consent to the notice that names Meta.
-const metaPixelId='2193519268213734',metaConsentVersion='meta-pixel-v1';
+// Load tracking only after consent to the notice naming both providers.
+const metaPixelId='2193519268213734',metaConsentVersion='meta-clarity-v2';
 const cookieNotice={
 ro:'Folosim stocare necesară pentru funcționarea site-ului. Cu acordul tău, Meta Pixel trimite către Meta informații despre vizitele pe pagini pentru măsurarea publicității. Poți refuza sau retrage acordul din preferințele cookie.',
 en:'We use necessary storage to operate the website. With your consent, Meta Pixel sends page-visit information to Meta to measure advertising. You can refuse or withdraw consent in cookie preferences.',
@@ -40,7 +40,15 @@ hu:'A weboldal működéséhez szükséges tárhelyet használunk. Hozzájárul�
 bg:'Използваме необходимо съхранение за работата на сайта. С ваше съгласие Meta Pixel изпраща на Meta информация за посещенията на страниците за измерване на рекламите. Можете да откажете или оттеглите съгласието си от настройките за бисквитки.',
 nl:'We gebruiken noodzakelijke opslag voor de werking van de website. Met uw toestemming stuurt Meta Pixel informatie over paginabezoeken naar Meta om advertenties te meten. U kunt toestemming weigeren of intrekken via de cookievoorkeuren.'
 };
-if(cookie){const notice=$('p',cookie);if(notice)notice.textContent=cookieNotice[locale]}
+const clarityNotice={
+ro:'Microsoft Clarity înregistrează interacțiunile cu site-ul pentru hărți de clicuri și înregistrări ale sesiunilor, cu conținutul formularelor mascat.',
+en:'Microsoft Clarity records website interactions for heatmaps and session recordings, with form content masked.',
+pl:'Microsoft Clarity rejestruje interakcje ze stroną na potrzeby map cieplnych i nagrań sesji, z zamaskowaną treścią formularzy.',
+hu:'A Microsoft Clarity hőtérképekhez és munkamenet-felvételekhez rögzíti a weboldalon végzett interakciókat, az űrlapok tartalmát maszkolva.',
+bg:'Microsoft Clarity записва взаимодействията със сайта за топлинни карти и записи на сесии, като съдържанието на формулярите е маскирано.',
+nl:'Microsoft Clarity registreert website-interacties voor heatmaps en sessieopnamen, waarbij formulierinhoud wordt gemaskeerd.'
+};
+if(cookie){const notice=$('p',cookie);if(notice)notice.textContent=cookieNotice[locale]+' '+clarityNotice[locale]}
 function hasMetaConsent(){return storage.get('pl_cookie',null)==='all'&&storage.get('pl_meta_consent_version',null)===metaConsentVersion}
 function syncMetaPixel(allowed){
   if(!allowed){if(window.__plMetaPixelInitialized)window.fbq('consent','revoke');return}
@@ -51,17 +59,37 @@ function syncMetaPixel(allowed){
   if(!window.__plMetaPixelInitialized){window.fbq('init',metaPixelId);window.__plMetaPixelInitialized=true}
   if(!window.__plMetaPageViewSent){window.fbq('trackSingle',metaPixelId,'PageView');window.__plMetaPageViewSent=true}
 }
+function syncClarity(allowed){
+  if(!allowed){
+    if(window.__plClarityLoaded&&!window.__plClarityStopped){
+      window.clarity('consentv2',{ad_Storage:'denied',analytics_Storage:'denied'});
+      window.clarity('stop');window.__plClarityStopped=true;
+    }
+    return;
+  }
+  // Mask forms before the asynchronous recorder can inspect the page.
+  $$('form').forEach(form=>form.setAttribute('data-clarity-mask','true'));
+  window.clarity=window.clarity||function(){(window.clarity.q=window.clarity.q||[]).push(arguments)};
+  window.clarity('consentv2',{ad_Storage:'granted',analytics_Storage:'granted'});
+  if(window.__plClarityStopped){window.clarity('start');window.__plClarityStopped=false}
+  if(!window.__plClarityLoaded){
+    const script=document.createElement('script');script.type='text/javascript';script.async=true;
+    script.src='https://www.clarity.ms/tag/yit78sejrh';
+    document.head.appendChild(script);window.__plClarityLoaded=true;
+  }
+}
+function syncTrackingConsent(allowed){syncMetaPixel(allowed);syncClarity(allowed)}
 const cookiePreference=storage.get('pl_cookie',null);
 if(cookie&&(!cookiePreference||(cookiePreference==='all'&&!hasMetaConsent())))cookie.hidden=false;
-syncMetaPixel(hasMetaConsent());
+syncTrackingConsent(hasMetaConsent());
 function closeCookie(value){
   if(value!=='all'&&value!=='necessary')return;
   storage.set('pl_cookie',value);storage.set('pl_meta_consent_version',metaConsentVersion);
-  syncMetaPixel(value==='all');
+  syncTrackingConsent(value==='all');
   if(cookie){cookie.hidden=true;cookie.style.display='none'}
 }
 document.addEventListener('click',e=>{const b=e.target.closest?.('[data-cookie]');if(b){e.preventDefault();closeCookie(b.dataset.cookie)}});
-window.addEventListener('storage',e=>{if(e.key===null||e.key==='pl_cookie'||e.key==='pl_meta_consent_version')syncMetaPixel(hasMetaConsent())});
+window.addEventListener('storage',e=>{if(e.key===null||e.key==='pl_cookie'||e.key==='pl_meta_consent_version')syncTrackingConsent(hasMetaConsent())});
 $('.cookie-settings')?.addEventListener('click',()=>{if(cookie){cookie.hidden=false;cookie.style.display='flex'}});
 
 const productCatalog={
