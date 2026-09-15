@@ -433,6 +433,14 @@ def main() -> None:
         for locale in ("pl", "hu", "bg", "nl")
     }
 
+    # Preserve the configured Meta disclosure from each reviewed cookie policy.
+    # The older translation dictionaries predate the Pixel integration.
+    disclosure_xpath = '//section[@class="legal-copy"]/p[2]'
+    english_disclosure = html.parse(str(ROOT / "en/cookie-uri/index.html")).xpath(disclosure_xpath)[0].text_content()
+    for locale, dictionary in translations.items():
+        localized_disclosure = html.parse(str(ROOT / locale / "cookie-uri/index.html")).xpath(disclosure_xpath)[0].text_content()
+        dictionary[english_disclosure] = localized_disclosure
+
     for relative in relatives:
         build_page(ROOT / relative, relative, "ro", None)
         build_page(ROOT / "en" / relative, relative, "en", None)
