@@ -1241,6 +1241,10 @@
   "Analysis": "Analyse",
   "Results linked to the sample and method, under version control.": "Resultaten gekoppeld aan het monster en de methode, onder versiebeheer.",
   "Release": "Vrijlating",
-  "Only after legal, technical and commercial approval.": "Alleen na wettelijke, technische en commerciële goedkeuring."
+  "Only after legal, technical and commercial approval.": "Alleen na wettelijke, technische en commerciële goedkeuring.",
+  "First name": "Voornaam",
+  "Last name": "Achternaam",
+  "Verification of contact details.": "Controle van de contactgegevens.",
+  "Enter your first name.": "Vul uw voornaam in.",
+  "Enter your last name.": "Vul uw achternaam in."
 }
-

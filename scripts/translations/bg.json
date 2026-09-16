@@ -1241,6 +1241,10 @@
   "Analysis": "Анализ",
   "Results linked to the sample and method, under version control.": "Резултати, свързани с пробата и метода, под контрол на версията.",
   "Release": "Освобождаване",
-  "Only after legal, technical and commercial approval.": "Само след правно, техническо и търговско одобрение."
+  "Only after legal, technical and commercial approval.": "Само след правно, техническо и търговско одобрение.",
+  "First name": "Име",
+  "Last name": "Фамилия",
+  "Verification of contact details.": "Проверка на данните за контакт.",
+  "Enter your first name.": "Въведете собственото си име.",
+  "Enter your last name.": "Въведете фамилията си."
 }
-

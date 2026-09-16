@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from lxml import etree, html
+from customer_form import simplify_page
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -349,7 +350,7 @@ def build_page(source: Path, relative: Path, locale: str, translations: dict[str
 
     for script in document.xpath("//script[@src]"):
         if script.get("src", "").startswith("/assets/app.js"):
-            script.set("src", "/assets/app.js?v=20260907-1")
+            script.set("src", "/assets/app.js?v=20260916-1")
     for link in document.xpath("//link[@rel='stylesheet']"):
         if link.get("href", "").startswith("/assets/styles.css"):
             link.set("href", "/assets/styles.css?v=20260907-1")
@@ -357,7 +358,7 @@ def build_page(source: Path, relative: Path, locale: str, translations: dict[str
     destination = output_path(relative, locale)
     destination.parent.mkdir(parents=True, exist_ok=True)
     rendered = "<!doctype html>" + html.tostring(document, encoding="unicode", method="html")
-    destination.write_text(rendered, encoding="utf-8")
+    destination.write_text(simplify_page(rendered, locale), encoding="utf-8")
 
 
 def build_forms_detector() -> None:
@@ -365,7 +366,7 @@ def build_forms_detector() -> None:
         "peptidalab-popup": ["email", "organisation"],
         "peptidalab-contact": ["name", "email", "organisation", "subject_area", "message", "privacy_consent"],
         "peptidalab-newsletter": ["email", "marketing_consent"],
-        "peptidalab-cart-order": ["organisation", "vat_id", "country", "contact_name", "role", "email", "phone", "billing_address", "delivery_address", "products", "research_purpose", "documents", "promotional_code", "ruo_declaration", "request_confirmation", "privacy_consent"],
+        "peptidalab-cart-order": ["first_name", "last_name", "country", "email", "phone", "billing_address", "delivery_address", "products", "promotional_code", "ruo_declaration", "request_confirmation", "privacy_consent"],
     }
     subjects = {config["name"]: config["subject"] for config in FORM_CONFIG.values()}
     body = ["<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"><title>Netlify Forms detector</title></head><body hidden>"]

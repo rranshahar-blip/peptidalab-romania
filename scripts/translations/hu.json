@@ -1241,5 +1241,10 @@
   "Analysis": "Elemzés",
   "Results linked to the sample and method, under version control.": "Az eredmények a mintához és a módszerhez kapcsolódnak, verziókezelés alatt.",
   "Release": "Kiadás",
-  "Only after legal, technical and commercial approval.": "Csak jogi, műszaki és kereskedelmi jóváhagyás után."
+  "Only after legal, technical and commercial approval.": "Csak jogi, műszaki és kereskedelmi jóváhagyás után.",
+  "First name": "Keresztnév",
+  "Last name": "Vezetéknév",
+  "Verification of contact details.": "A kapcsolattartási adatok ellenőrzése.",
+  "Enter your first name.": "Adja meg a keresztnevét.",
+  "Enter your last name.": "Adja meg a vezetéknevét."
 }

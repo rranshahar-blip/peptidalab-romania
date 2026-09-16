@@ -160,3 +160,12 @@ document.addEventListener('keydown',e=>{const drawer=$('#cart-drawer');if(e.key=
 // Netlify removes data-netlify during publishing; bind by the persistent form name.
 $$('form[name^="peptidalab-"]').forEach(form=>form.addEventListener('submit',async event=>{event.preventDefault();if(form.dataset.submitting==='true')return;const submit=$('[type="submit"]',form),originalLabel=submit?.textContent||'',status=form.querySelector('.form-status')||document.createElement('p');status.className='form-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');if(!status.parentNode)form.appendChild(status);status.textContent='';status.classList.remove('success','error');form.dataset.submitting='true';if(submit){submit.disabled=true;submit.textContent=ui.sending}try{const data=new FormData(form);data.set('form-name',form.name);data.set('source_page',window.location.pathname);data.set('language',locale);const body=new URLSearchParams();data.forEach((value,key)=>body.append(key,String(value)));const response=await fetch('/__forms.html',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()});if(!response.ok)throw new Error(`HTTP ${response.status}`);status.textContent=form.dataset.success;status.classList.add('success');form.reset()}catch(error){console.error('Form submission failed',error);status.textContent=form.dataset.error;status.classList.add('error');form.dataset.submitting='false';if(submit){submit.disabled=false;submit.textContent=originalLabel}return}form.dataset.submitting='false';if(submit){submit.disabled=false;submit.textContent=originalLabel}}));
 function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+// Validate customer names in the page language, including whitespace-only entries.
+$$('form[data-form-type="cart"] input[data-required-message]').forEach(input=>{
+  const validate=()=>input.setCustomValidity(input.value.trim()?'':input.dataset.requiredMessage);
+  input.addEventListener('input',validate);
+  input.addEventListener('invalid',validate);
+  input.addEventListener('blur',()=>{input.value=input.value.trim();validate()});
+  input.form.addEventListener('reset',()=>input.setCustomValidity(''));
+});

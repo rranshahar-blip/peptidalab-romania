@@ -1241,6 +1241,10 @@
   "Analysis": "Analiza",
   "Results linked to the sample and method, under version control.": "Wyniki powiązane z próbką i metodą, pod kontrolą wersji.",
   "Release": "Uwolnienie",
-  "Only after legal, technical and commercial approval.": "Tylko po uzyskaniu zgody prawnej, technicznej i handlowej."
+  "Only after legal, technical and commercial approval.": "Tylko po uzyskaniu zgody prawnej, technicznej i handlowej.",
+  "First name": "Imię",
+  "Last name": "Nazwisko",
+  "Verification of contact details.": "Weryfikacja danych kontaktowych.",
+  "Enter your first name.": "Podaj imię.",
+  "Enter your last name.": "Podaj nazwisko."
 }
-
