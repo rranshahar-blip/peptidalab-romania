@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 
 from lxml import etree, html
 from customer_form import simplify_page
+from customer_experience import polish_page
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,22 +68,22 @@ HONEYPOT_LABEL = {
 FORM_CONFIG = {
     "popup": {
         "name": "peptidalab-popup",
-        "subject": "New PeptidaLab EU popup signup",
+        "subject": "New PEPTIDALAB EUROPE popup signup",
         "legacy": {"reducere-eligibila", "reducere-eligibila-en"},
     },
     "contact": {
         "name": "peptidalab-contact",
-        "subject": "New PeptidaLab EU contact request",
+        "subject": "New PEPTIDALAB EUROPE contact request",
         "legacy": {"contact", "contact-en"},
     },
     "newsletter": {
         "name": "peptidalab-newsletter",
-        "subject": "New PeptidaLab EU newsletter signup",
+        "subject": "New PEPTIDALAB EUROPE newsletter signup",
         "legacy": {"newsletter", "newsletter-en"},
     },
     "cart": {
         "name": "peptidalab-cart-order",
-        "subject": "New PeptidaLab EU cart or order request",
+        "subject": "New PEPTIDALAB EUROPE cart or order request",
         "legacy": {"solicitare-eligibilitate", "solicitare-eligibilitate-en"},
     },
 }
@@ -191,6 +192,9 @@ def ensure_forms(document: etree._Element, locale: str, page_path: str) -> None:
             if field.tag == "input" and field.get("type") == "checkbox" and not field.get("value"):
                 field.set("value", "yes")
 
+        for old_trap in form.xpath(".//p[@class='honeypot']"):
+            old_trap.getparent().remove(old_trap)
+
         for old in form.xpath("./input[@type='hidden']"):
             if old.get("name") in {"form-name", "source_page", "language", "subject", "bot-field"}:
                 form.remove(old)
@@ -239,7 +243,7 @@ def replace_contact_panel(document: etree._Element, relative: Path, locale: str)
     etree.SubElement(aside, "h2").text = heading
     company = etree.SubElement(aside, "p")
     etree.SubElement(company, "strong").text = f"{company_label}:"
-    company[-1].tail = " PEPTIDALAB EU"
+    company[-1].tail = " PEPTIDALAB EUROPE"
     email = etree.SubElement(aside, "p")
     etree.SubElement(email, "strong").text = f"{email_label}:"
     email[-1].tail = " "
@@ -252,7 +256,7 @@ def replace_footer_contact(document: etree._Element) -> None:
     for block in document.xpath("//*[contains(concat(' ', normalize-space(@class), ' '), ' company-placeholder ')]"):
         block.clear()
         block.set("class", "company-placeholder company-contact")
-        etree.SubElement(block, "strong").text = "PEPTIDALAB EU"
+        etree.SubElement(block, "strong").text = "PEPTIDALAB EUROPE"
         block[-1].tail = " · "
         etree.SubElement(block, "a", href=f"mailto:{CONTACT_EMAIL}").text = CONTACT_EMAIL
 
@@ -284,7 +288,7 @@ def update_metadata(document: etree._Element, relative: Path, locale: str) -> No
 
     for script in document.xpath("//script[@type='application/ld+json']"):
         if script.text:
-            script.text = script.text.replace(STAGING_ORIGIN, PRODUCTION_ORIGIN).replace('"name":"PeptidaLab EU"', '"name":"PEPTIDALAB EU"')
+            script.text = script.text.replace(STAGING_ORIGIN, PRODUCTION_ORIGIN).replace('"name":"PeptidaLab EU"', '"name":"PEPTIDALAB EUROPE"')
 
 
 def translate_document(document: etree._Element, translations: dict[str, str]) -> None:
@@ -358,13 +362,13 @@ def build_page(source: Path, relative: Path, locale: str, translations: dict[str
     destination = output_path(relative, locale)
     destination.parent.mkdir(parents=True, exist_ok=True)
     rendered = "<!doctype html>" + html.tostring(document, encoding="unicode", method="html")
-    destination.write_text(simplify_page(rendered, locale), encoding="utf-8")
+    destination.write_text(polish_page(simplify_page(rendered, locale), locale), encoding="utf-8")
 
 
 def build_forms_detector() -> None:
     fields = {
-        "peptidalab-popup": ["email", "organisation"],
-        "peptidalab-contact": ["name", "email", "organisation", "subject_area", "message", "privacy_consent"],
+        "peptidalab-popup": ["email"],
+        "peptidalab-contact": ["name", "email", "subject_area", "message", "privacy_consent"],
         "peptidalab-newsletter": ["email", "marketing_consent"],
         "peptidalab-cart-order": ["first_name", "last_name", "country", "email", "phone", "billing_address", "delivery_address", "products", "promotional_code", "ruo_declaration", "request_confirmation", "privacy_consent"],
     }
@@ -421,7 +425,7 @@ def build_sitemap(relatives: list[Path]) -> None:
 
 
 def main() -> None:
-    ro_files = sorted(path for path in ROOT.rglob("*.html") if path.relative_to(ROOT).parts[0] not in {"en", "pl", "hu", "bg", "nl", "scripts"} and path.name != "__forms.html")
+    ro_files = sorted(path for path in ROOT.rglob("*.html") if path.relative_to(ROOT).parts[0] not in {"en", "pl", "hu", "bg", "nl", "scripts", "ghid-cosmetic"} and path.name != "__forms.html")
     relatives = [path.relative_to(ROOT) for path in ro_files]
     en_files = {path.relative_to(ROOT / "en"): path for path in (ROOT / "en").rglob("*.html")}
     if set(relatives) != set(en_files):
