@@ -31,7 +31,7 @@ $('.modal-close',discount)?.addEventListener('click',()=>hide(discount));
 
 const cookie=$('.cookie-banner');
 // Meta requires consent; Clarity uses limited cookieless mode until consent.
-const metaPixelId='2655154998320054',metaConsentVersion='meta-clarity-v2';
+const metaPixelId='1389921679419494',metaConsentVersion='meta-clarity-v2';
 const cookieNotice={
 ro:'Folosim stocare necesară pentru funcționarea site-ului. Cu acordul tău, Meta Pixel trimite către Meta informații despre vizitele pe pagini pentru măsurarea publicității. Poți refuza sau retrage acordul din preferințele cookie.',
 en:'We use necessary storage to operate the website. With your consent, Meta Pixel sends page-visit information to Meta to measure advertising. You can refuse or withdraw consent in cookie preferences.',
